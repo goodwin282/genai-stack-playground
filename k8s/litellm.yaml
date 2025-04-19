@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+  namespace: genai-platform
+data:
+  config.yaml: |
+    model_list:
+      - model_name: claude-3.5-sonnet-rg
+        litellm_params:
+          model: anthropic/claude-3-5-sonnet-20240620
+          api_key: ${ANTHROPIC_API_KEY}
+    
+    router_settings:
+      routing_strategy: simple-shuffle
+      timeout: 30
+    
+    server:
+      host: 0.0.0.0
+      port: 4000
+      environment: development
+      cors_allowed_origins: ["*"]
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: litellm-secrets
+  namespace: genai-platform
+type: Opaque
+data:
+  # These are placeholders - use kubectl create secret or Flux to manage these properly
+  # Base64 encoded empty strings
+  OPENAI_API_KEY: ""
+  ANTHROPIC_API_KEY: ""
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm
+  namespace: genai-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: litellm
+  template:
+    metadata:
+      labels:
+        app: litellm
+    spec:
+      containers:
+      - name: litellm
+        image: ghcr.io/berriai/litellm:main
+        args: ["--config", "/app/config/config.yaml"]
+        ports:
+        - containerPort: 4000
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+        envFrom:
+        - secretRef:
+            name: litellm-secrets
+      volumes:
+      - name: config-volume
+        configMap:
+          name: litellm-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: litellm
+  namespace: genai-platform
+spec:
+  selector:
+    app: litellm
+  ports:
+  - port: 4000
+    targetPort: 4000
+  type: ClusterIP

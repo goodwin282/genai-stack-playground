@@ -1,0 +1,30 @@
+# Environment variables
+.env
+.env.local
+.env.*
+
+# Secrets
+secrets/
+*secret*
+
+# Node.js
+node_modules/
+npm-debug.log
+
+# Data directories
+n8n_data/
+**/data/
+
+# Logs
+logs/
+*.log
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db

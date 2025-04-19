@@ -1,0 +1,84 @@
+services:
+  # OpenWebUI - Frontend for interacting with LLMs
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:latest
+    platform: linux/arm64  # Explicitly set platform for ARM-based Macs
+    container_name: openwebui
+    ports:
+      - "3000:8080"
+    environment:
+      - WEBUI_AUTH=false # Disable auth for local testing
+      - API_BASE_URL=http://litellm:4000
+    depends_on:
+      - litellm
+    networks:
+      - genai-network
+
+  # LiteLLM - LLM API abstraction/routing layer
+  litellm:
+    build:
+      context: .
+      dockerfile: Dockerfile.litellm-arm64
+    platform: linux/arm64  # Explicitly set platform
+    container_name: litellm
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./litellm_config:/app/config
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    networks:
+      - genai-network
+
+  # n8n - Workflow automation
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - ./n8n_data:/home/node/.n8n
+    networks:
+      - genai-network
+
+  # Langfuse - Observability platform for LLMs
+  langfuse:
+    image: langfuse/langfuse:latest
+    container_name: langfuse
+    ports:
+      - "3001:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@langfuse-db:5432/postgres
+      - NEXTAUTH_SECRET=yoursecret
+      - NEXTAUTH_URL=http://localhost:3001
+      - SALT=yoursalt
+      - LANGFUSE_ENABLE_EXPERIMENTAL_FEATURES=true
+    depends_on:
+      - langfuse-db
+    networks:
+      - genai-network
+
+  # Database for Langfuse
+  langfuse-db:
+    image: postgres:15
+    container_name: langfuse-db
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - langfuse-db-data:/var/lib/postgresql/data
+    networks:
+      - genai-network
+
+networks:
+  genai-network:
+    driver: bridge
+
+volumes:
+  langfuse-db-data:

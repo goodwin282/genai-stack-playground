@@ -1,0 +1,16 @@
+FROM --platform=linux/arm64 python:3.10-slim
+
+WORKDIR /app
+
+# Install litellm without specifying a version
+RUN pip install --no-cache-dir litellm[proxy]
+
+# Set up configuration directory
+RUN mkdir -p /app/config
+
+# Expose the port
+EXPOSE 4000
+
+# Command to run when container starts
+ENTRYPOINT ["litellm"]
+CMD ["--config", "/app/config/config.yaml", "--port", "4000"]

@@ -1,0 +1,8 @@
+model_list:
+  - model_name: claude-3.5-sonnet-rg
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20240620
+
+server:
+  host: 0.0.0.0
+  port: 4000
