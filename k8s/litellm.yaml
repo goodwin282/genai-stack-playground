@@ -9,7 +9,7 @@ data:
       - model_name: claude-3.5-sonnet-rg
         litellm_params:
           model: anthropic/claude-3-5-sonnet-20240620
-          api_key: ${ANTHROPIC_API_KEY}
+          api_key: env/ANTHROPIC_API_KEY
     
     router_settings:
       routing_strategy: simple-shuffle
@@ -30,7 +30,6 @@ type: Opaque
 data:
   # These are placeholders - use kubectl create secret or Flux to manage these properly
   # Base64 encoded empty strings
-  OPENAI_API_KEY: ""
   ANTHROPIC_API_KEY: ""
 ---
 apiVersion: apps/v1
@@ -50,7 +49,7 @@ spec:
     spec:
       containers:
       - name: litellm
-        image: ghcr.io/berriai/litellm:main
+        image: goodwin282/litellm-arm64:latest
         args: ["--config", "/app/config/config.yaml"]
         ports:
         - containerPort: 4000
