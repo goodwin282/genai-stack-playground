@@ -1,6 +1,7 @@
 ### Personal Note:
 - where i left off 4/19 - k8s not identifying litellm custom image needed to run on ARM 64
   - check out bottom of starred claude chat from 4/19 for potential solutions
+- Check this against README after PR
 
 # GenAI Platform Starter Project
 
